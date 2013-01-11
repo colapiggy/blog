@@ -1,0 +1,62 @@
+--- 
+layout: post 
+title: JDBC使用不当会导致memory leak
+category: Tech 
+comments : true
+--- 
+<h2>{{  }}</h2>
+{{ page.date | date_to_string }}  
+<p></p>
+
+<p>做CCSS时，park说我们的系统有memory leak，让我和学弟查查。</p>
+
+<p>可我们也不知道是为什么。</p>
+
+<p><img alt="" src="/blog/pic/memory_leak.jpg" style="width: 40%;" /></p>
+
+<p>&nbsp;</p>
+
+<p>后来Park帮我们查了下，发现是jdbc的用法的问题。ResultSet和Statement没关闭，导致发生memory leak。我们确实缺少经验。</p>
+
+<p>改成这样就没问题了。</p>
+<p>这个写法比较难看，可以设计得更好。但就着这个也可以用了。先记下来。</p>
+<div style="overflow:auto;">
+<pre class="prettyprint"><code class="language-java">
+PreparedStatement stmt = null;
+ResultSet rs = null;
+try {
+	stmt = SQLHelper.getSQLHelper().getConnection()
+					.prepareStatement(sql);
+	stmt.setInt(1, cloneid);
+	rs = stmt.executeQuery();
+	if (rs.next()) {
+		fileID = rs.getInt(3);
+		start = rs.getInt(4);
+		end = rs.getInt(5);
+		similarity = rs.getInt(6);
+		review = rs.getString(7);
+	}
+} catch (SQLException e) {
+	e.printStackTrace();
+} finally {
+	if (stmt != null) {
+		try {
+			stmt.close();
+		} catch (SQLException e) {
+			throw new UnexpectRegisterException(e);
+		}
+	}
+
+	if (rs != null) {
+		try {
+			rs.close();
+		} catch (SQLException e) {
+			throw new UnexpectRegisterException(e);
+		}
+	}
+}
+</code>
+</pre>
+</div>
+
+<p>感谢Park的帮助。</p>

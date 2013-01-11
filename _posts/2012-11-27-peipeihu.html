@@ -1,0 +1,261 @@
+---
+category: Test
+---
+<html> 
+<head> 
+    <title>ボケ星</title> 
+      <meta http-equiv="content-type" content="text/html; charset=utf-8" /> 
+  <link rel="stylesheet" type="text/css" href="/blog/css/style.css" title="style" /> 
+        <script type="text/javascript" src="http://www.google.com/jsapi"></script> 
+        <script type="text/javascript"> 
+            google.load("jquery","1.3.2"); 
+            google.setOnLoadCallback(function() { $(document).ready(pageLoad); }); 
+            var canvas; 
+            var canvasCtx; 
+            var imgSpirit; 
+            var currentX; 
+            var currentY; 
+            var targetX; 
+            var targetY; 
+            var difX; 
+            var difY; 
+            var oTimer; 
+            var facing = 4; 
+            var isRunning = false; 
+            var pathX = []; 
+            var pathY = []; 
+            function pageLoad() { 
+                //canvas = $("#canvas"); 
+                canvas = document.getElementById('canvas'); 
+                imgSpirit = new Image(); 
+                imgSpirit.onload = function() { 
+                    if (canvas.getContext) { 
+                        canvasCtx = canvas.getContext('2d'); 
+                        currentX = 100; 
+                        currentY = 250; 
+                        draw(0); 
+                    } 
+                } 
+                imgSpirit.src = "/blog/css/spirit.png"; 
+               // $("#canvas").mousedown(onStart); 
+                //$("#canvas").mouseup(onStop); 
+                 onRunning(); 
+                $("#canvas").mousemove(onMove); 
+                $("#canvas").css("cursor", "pointer"); 
+            } 
+
+
+            function onStart(event) { 
+                if (event.button == 0) { 
+                    targetX = event.pageX; 
+                    targetY = event.pageY; 
+                    isRunning = true; 
+                    onRunning(); 
+ 
+                } 
+            } 
+
+            function onStop() { 
+                isRunning = false; 
+                clearInterval(oTimer); 
+            } 
+
+            function onMove(event) { 
+               isRunning = true; 
+                    difX = event.pageX - targetX; 
+                    difY = event.pageY - targetY; 
+                    setFacing(); 
+                    pathX.push(difX); 
+                    pathY.push(difY); 
+                    targetX = event.pageX; 
+                    targetY = event.pageY; 
+ 
+ 
+ 
+            } 
+
+            function onRunning() { 
+                var i = 0; 
+                oTimer = setInterval(function() { 
+                    i = i % 8; 
+                    setNext(); 
+                    draw(i); 
+                    i++; 
+                }, 50); 
+ 
+            } 
+
+
+
+            function setFacing() { 
+               var  y = -(targetY -(currentY +128+60)) 
+               var x = targetX - (currentX + 128); 
+               var v=y/x; 
+               var t = Math.atan(v); 
+               var r = Math.PI / 8; 
+
+
+
+               if (y > 0 && x > 0) { 
+                   if (t >= 0 && t <= r) { 
+                       facing = 4; 
+                   } 
+                   if (t > r && t < 3 * r) { 
+                       facing = 3; 
+                   } 
+                   if (t > 3 * r) { 
+                        facing =2 
+                    } 
+
+                } 
+
+                if (y > 0 && x < 0) { 
+                    if ((-t) > 3 * r) { 
+                        facing = 2; 
+                    } 
+                    if (-t > r && -t < 3 * r) { 
+                        facing = 1; 
+                    } 
+                    if (-t >= 0 && -t <= r) { 
+                        facing = 0; 
+                    } 
+                } 
+
+
+                if (y < 0 && x < 0) { 
+                    if (t >= 0 && t <= r) { 
+                        facing = 0; 
+                    } 
+                    if (t > r && t < 3 * r) { 
+                        facing = 7; 
+                    } 
+                    if (t > 3 * r) { 
+                        facing = 6 
+                    } 
+                } 
+
+
+                if (y < 0 && x > 0) { 
+                    if ((-t) > 3 * r) { 
+                        facing = 6; 
+                    } 
+                    if (-t > r && -t < 3 * r) { 
+                        facing = 5; 
+                    } 
+                    if (-t >= 0 && -t <= r) { 
+                        facing = 4; 
+                    } 
+                } 
+            } 
+ 
+            function draw(frame) { 
+ 
+                if ((currentX +256) >= 1500) { 
+                    currentX = 1500 - 256; 
+                } 
+                if (currentX <= 0) { 
+                    currentX = 0; 
+                } 
+
+                if (currentY <= 0) { 
+                    currentY = 0; 
+                } 
+                if ((currentY + 256) >= 800) { 
+                    currentY = 800 - 256; 
+                } 
+ 
+ 
+                canvasCtx.clearRect(currentX, currentY, 256, 256); 
+                canvasCtx.drawImage(imgSpirit, frame * 256, facing * 256, 256, 256, currentX, currentY, 256, 256); 
+ 
+            } 
+
+            function setNext() { 
+                if ((currentX + 128) > targetX) { 
+                    if (((currentX + 128 ) - targetX) > 8) { 
+                        currentX = currentX - 8; 
+                    } 
+                } 
+                if (currentX +128 < targetX) { 
+                    if (targetX -currentX-128>8 ) { 
+                        currentX = currentX + 8; 
+                    } 
+                } 
+
+
+
+                if ((currentY + 128) > targetY) { 
+                    if (((currentY + 128 + 50) - targetY) > 8) { 
+                        currentY = currentY - 6; 
+                    } 
+
+                } 
+                if ((currentY + 128) < targetY) { 
+                    if ((targetY - (currentY + 128 + 50)) > 8) { 
+                        currentY = currentY + 6; 
+                    } 
+                } 
+                if((currentX + 128) < targetX && currentX > targetX && (currentY + 128 + 60) < targetY && (currentY + 128 + 60) > targetY){ 
+                	isRunning = false; 
+                	 
+                clearInterval(oTimer); 
+                } 
+            } 
+ 
+        </script> 
+   <style type="text/css"> 
+   #canvas{ 
+   position:absolute; 
+left:0px; 
+top:0px 
+   } 
+   </style> 
+</head> 
+<body> 
+  <div id="main"> 
+    <div id="header"> 
+      <div id="logo"> 
+        <div id="logo_text"> 
+          <!-- class="logo_colour", allows you to change the colour of the text --> 
+          <h1><a href="index.html">ボケ星</a></h1> 
+          
+        </div> 
+      </div> 
+      <div id="menubar"> 
+        <ul id="menu"> 
+          <!-- put class="selected" in the li tag for the selected page - to highlight which page you're on --> 
+          <li class="selected"><a href="index.html">Home</a></li> 
+          <li><a href="list.html">List</a></li> 
+          <li><a href="photo.html">Photo</a></li> 
+          <li><a href="about.html">About</a></li> 
+        </ul> 
+      </div> 
+    </div> 
+    <div id="site_content"> 
+     <div class="sidebar">
+        <!-- insert your sidebar items here -->
+        <h3>最新文章</h3>
+        <ul>
+         {% for post in site.categories.Tech limit: 5 %}
+  
+    <li>
+   <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
+  {% endfor %}
+  </li>
+        </ul>
+      </div>
+      <div id="content"> 
+    <canvas id="canvas"  width="1500" height="800"> 
+    </canvas> 
+    <h2>动画</h2> 
+<p>沛沛虎的动画。</p> 
+<p>测试一下javascript是否好用。</p> 
+  </div> 
+    </div> 
+    <div id="content_footer"></div> 
+    <div id="footer"> 
+      Copyright &copy; black &amp; white | <a href="http://validator.w3.org/check?uri=referer">HTML5</a> | <a href="http://jigsaw.w3.org/css-validator/check/referer">CSS</a> | <a href="http://www.html5webtemplates.co.uk">design from HTML5webtemplates.co.uk</a> 
+    </div> 
+  </div> 
+</body> 
+</html> 
